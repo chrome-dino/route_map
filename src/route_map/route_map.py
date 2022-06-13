@@ -10,12 +10,22 @@ import socket
 
 class RouteMap:
 
-    def __init__(self, pcap='', trace='', out=''):
+    def __init__(self, pcap='', trace='', out='',public='',local=''):
         # Intialize member variables
         self.pcap = pcap
-        self.public = self.get_public()
+        if public:
+            self.public = public
+        else:
+            self.public = self.get_public()  
+        if local:
+            self.local = local
+        else:
+            self.local = self.get_local()
         self.trace = trace
-        self.out = out
+        if out:
+            self.out = out
+        else:
+            self.out = 'route_map.kml'
 
     @staticmethod
     def geolocate(ip):
@@ -84,19 +94,22 @@ class RouteMap:
 
         self.build_kml(route)
         return
-
+    
+    @staticmethod
+    def get_local():
+        h_name = socket.gethostname()
+        local = socket.gethostbyname(h_name)
+        return local
+        
     def pcap_mode(self):
         ips = set((p[IP].src, p[IP].dst) for p in PcapReader(self.pcap) if IP in p)
         dup = []
         route = []
 
-        h_name = socket.gethostname()
-        local = socket.gethostbyname(h_name)
-
         for ip in ips:
             src = ip[0]
             dst = ip[1]
-            if src == local:
+            if src == self.local:
                 src = self.public
             if dst == local:
                 dst = self.public
@@ -112,5 +125,11 @@ class RouteMap:
 
         self.build_kml(route)
         return
+    
+    def run(self):
+        if self.trace == '':
+            self.pcap_mode()
+        else:
+            self.trace_mode()
 
 
