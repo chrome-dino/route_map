@@ -111,7 +111,7 @@ class RouteMap:
             dst = ip[1]
             if src == self.local:
                 src = self.public
-            if dst == local:
+            if dst == self.local:
                 dst = self.public
             comb = src + dst
             if comb in dup:
@@ -127,7 +127,7 @@ class RouteMap:
         return
     
     def run(self):
-        if self.trace == '':
+        if self.trace is None:
             self.pcap_mode()
         else:
             self.trace_mode()
