@@ -4,6 +4,8 @@ import json
 from subprocess import Popen, PIPE
 import simplekml
 import socket
+import ipaddress
+
 
 # https://www.google.com/maps/about/mymaps/
 
@@ -85,13 +87,20 @@ class RouteMap:
         trace.pop(0)
         route = []
         trace[0] = self.public
+        final = []
+        for hop in trace:
+            ip = ipaddress.IPv4Address(hop)
+            if not ip.is_private and not ip.is_multicast:
+                final.append(hop)
 
-        for hop in range(len(trace) - 1):
-            src_cood = self.geolocate(trace[hop])
-            dst_cood = self.geolocate(trace[hop + 1])
-            route.append({'src': {'ip': trace[hop], 'lat': src_cood['lat'], 'long': src_cood['long']},
-                          'dst': {'ip': trace[hop + 1], 'lat': dst_cood['lat'], 'long': dst_cood['long']}})
-
+        
+        for hop in range(len(final) - 1):
+            
+            src_cood = self.geolocate(final[hop])
+            dst_cood = self.geolocate(final[hop + 1])
+            route.append({'src': {'ip': final[hop], 'lat': src_cood['lat'], 'long': src_cood['long']},
+                          'dst': {'ip': final[hop + 1], 'lat': dst_cood['lat'], 'long': dst_cood['long']}})
+        
         self.build_kml(route)
         return
     
@@ -118,10 +127,14 @@ class RouteMap:
                 continue
             else:
                 dup.append(comb)
+            ip = ipaddress.IPv4Address(src)
+            ip2 = ipaddress.IPv4Address(dst)
+            if ip.is_private or ip2.is_private or ip.is_multicast or ip2.is_multicast:
+                continue
             src_cood = self.geolocate(src)
             dst_cood = self.geolocate(dst)
-            route.append({'src': {'ip': ip[0], 'lat': src_cood['lat'], 'long': src_cood['long']},
-                          'dst': {'ip': ip[1], 'lat': dst_cood['lat'], 'long': dst_cood['long']}})
+            route.append({'src': {'ip': src, 'lat': src_cood['lat'], 'long': src_cood['long']},
+                          'dst': {'ip': dst, 'lat': dst_cood['lat'], 'long': dst_cood['long']}})
 
         self.build_kml(route)
         return
