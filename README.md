@@ -15,7 +15,8 @@ Route Map is a tool that can be track network traffic, map it via geolocation, a
 
 * Parse a pcap file, extracting IP addresses and geolocating them
 * Build a kml file from geolocation data which can be viewed in Google Maps
-* Trace the route of potentially interesting traffic  
+* Trace the route of potentially interesting traffic
+* Ability to choose to manually define or automatically retrieve local/public IP
 
 
 ## Installation
@@ -42,27 +43,19 @@ Uses the following python libraries:
 ### Help Menu
 
 ```bash
-usage: __main__.py [-h] -db HOSTNAME -u USERNAME -p PASSWORD [-port PORT] [-s SCHEMA] [-t TABLE] [-a | --admin | --no-admin]
-                   [-v | --verbose | --no-verbose]
+usage: __main__.py [-h] [-f FILE] [-t TRACE] [-o OUTPUT] [-p PUBLIC] [-l LOCAL]
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
-  -db HOSTNAME, --hostname HOSTNAME
-                        IP address or hostname of the target database
-  -u USERNAME, --username USERNAME
-                        Login username
-  -p PASSWORD, --password PASSWORD
-                        Login Password
-  -port PORT, --port PORT
-                        Port number (Defaults to 3306)
-  -s SCHEMA, --schema SCHEMA
-                        Name of the schema to be used in table extraction mode. Requires the table option
-  -t TABLE, --table TABLE
-                        Name of the table to be used in table extraction mode. Requires the schema option
-  -a, --admin, --no-admin
-                        Enable admin mode to extract database user info. Requires admin credentials
-  -v, --verbose, --no-verbose
-                        List additional details in the user report
+  -f FILE, --file FILE  Path to input pcap file.
+  -t TRACE, --trace TRACE
+                        Endpoint to trace to.
+  -o OUTPUT, --output OUTPUT
+                        Path to output kml file. Defaults to route_map.kml.
+  -p PUBLIC, --public PUBLIC
+                        Define public IP. Leave blank to auto retrieve.
+  -l LOCAL, --local LOCAL
+                        Define local IP. Leave blank to auto retrieve.
 ```
 
 ### Video
@@ -71,14 +64,14 @@ options:
 ### Examples
 
 ```bash
-# run the report generator with a standard user
-$ py -m mysql_enumerator -db hostname -u user -p password
+# develop a route map based on the traffic within the input pcap file. Output file will default to route_map.kml
+$ py -m route_map -f file.pcap
 
-# run the report generator with elevated permissions and extract info on database users
-$ py -m mysql_enumerator -db hostname -u root -p password -a
+# trace a route to a target IP address or url and build a kml map file. The output file has been defined as trace.kml
+$ py -m route_map -t TARGET_IP -o trace.kml
 
-# extract the rows from a table
-$ py -m mysql_enumerator -db hostname -u user -p password -s schema_name -t table_name1,table_name2
+# manually define the public and local IP. Useful when analyzing a pcap on a system other than the one it was generated on
+$ py -m route_map -f file.pcap -l LOCAL_IP -p PUBLIC_IP
 ```
 
 
